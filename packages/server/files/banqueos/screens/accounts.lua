@@ -249,7 +249,38 @@ local function modifyPin(account, card)
         if event == "terminate" or (event == "key" and key == keys.backspace) then return end
         if event == "key" and (key == keys.enter or key == keys.numPadEnter) then break end
     end
-    local ok, err = pcall(writer.beginWrite, nil, nil, pin, nil, nil)
+    if not writer.readCard then
+        ui.message(17, "Mettez a jour SecurityPeripheral", colors.red)
+        sleep(1.5)
+        return
+    end
+
+    -- Le writer lit directement la carte inseree, conserve toutes ses donnees
+    -- et remplace uniquement le code PIN avant de la reecrire.
+    local okRead, currentCard = pcall(writer.readCard)
+    if not okRead or type(currentCard) ~= "table" then
+        ui.message(17, tostring(currentCard or "Lecture de la carte impossible"), colors.red)
+        sleep(1.5)
+        return
+    end
+
+    if tostring(currentCard.cardId or "") ~= tostring(card.cardId or "") then
+        ui.message(17, "Erreur : mauvaise carte", colors.red)
+        sleep(1.5)
+        return
+    end
+
+    currentCard.pin = pin
+
+    local ok, err = pcall(function()
+        writer.beginWrite(
+            tostring(currentCard.owner or ""),
+            tostring(currentCard.status or "active"),
+            tostring(currentCard.pin or ""),
+            tostring(currentCard.cardId or ""),
+            tostring(currentCard.data or "")
+        )
+    end)
     if not ok then ui.message(17, tostring(err), colors.red); sleep(1.5); return end
     ui.header("Modification du code PIN"); ui.message(10, "Encodage en cours...", colors.orange); ui.footer("Ne retirez pas la carte")
     local done, writeErr = waitWriteResult()

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.2 - 2026-07-31
+
+- Correction de l'erreur `bad argument #1 (string expected, got nil)` lors de la modification du PIN.
+- Le writer réencode désormais Owner, Status, CardID et Data avec leurs valeurs existantes, et remplace uniquement le PIN.
+
+
 ## 0.4.4
 
 - Remplacement de la touche Echap par Back dans la creation de compte.

@@ -1,5 +1,24 @@
 return {
     {
+        version = "0.5.3",
+        date = "2026-07-31",
+        changes = {
+            "Ajout de writer.readCard() pour les reecritures partielles",
+            "Conservation des donnees existantes lors du changement de PIN",
+            "Verification du CardID avant reecriture"
+        }
+    },
+
+    {
+        version = "0.5.2",
+        date = "2026-07-31",
+        changes = {
+            "Correction de la modification du code PIN",
+            "Conservation des autres donnees de la carte pendant le reencodage",
+        },
+    },
+
+    {
         version = "0.5.1",
         date = "31/07/2026",
         changes = {
