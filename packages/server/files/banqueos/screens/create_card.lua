@@ -410,7 +410,12 @@ function createCard.show()
         return
     end
 
-    local saved, saveError = database.assignCardId(state.account.accountNumber, state.cardId)
+    local saved, saveError = database.assignCardId(state.account.accountNumber, state.cardId, {
+        owner = state.account.owner,
+        status = "active",
+        pin = state.pin,
+        data = "",
+    })
     if not saved then
         ui.header("Carte encodee")
         ui.message(9, "Carte encodee, mais sauvegarde impossible", colors.red)

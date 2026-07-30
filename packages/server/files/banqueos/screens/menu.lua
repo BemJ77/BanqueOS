@@ -4,8 +4,7 @@ local menu = {}
 
 local entries = {
     "Creer un compte",
-    "Liste des comptes",
-    "Consulter un compte",
+    "Consulter les comptes",
     "Creer une carte bancaire",
 }
 

@@ -5,7 +5,7 @@ local loading = require("banqueos.screens.loading")
 local menu = require("banqueos.screens.menu")
 local createAccount = require("banqueos.screens.create_account")
 local createCard = require("banqueos.screens.create_card")
-local placeholder = require("banqueos.screens.placeholder")
+local accounts = require("banqueos.screens.accounts")
 
 local main = {}
 
@@ -124,10 +124,8 @@ local function applicationLoop()
         if choice == 1 then
             createAccount.show()
         elseif choice == 2 then
-            placeholder.show("Liste des comptes")
+            accounts.show()
         elseif choice == 3 then
-            placeholder.show("Consulter un compte")
-        elseif choice == 4 then
             createCard.show()
         end
     end

@@ -1,5 +1,16 @@
 return {
     {
+        version = "0.5.0",
+        changes = {
+            "Ajout du menu Consultation des comptes",
+            "Ajout de l'historique et de la modification du solde",
+            "Ajout de la gestion des cartes associees",
+            "Ajout de la modification du PIN et de la suppression de carte",
+            "Ajout de la suppression de compte avec conservation des cartes orphelines",
+        },
+    },
+
+    {
         version = "0.4.4",
         changes = {
             "Remplacement de Echap par Back dans la creation de compte.",

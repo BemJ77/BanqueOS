@@ -6,6 +6,7 @@ local function defaultData()
     return {
         schemaVersion = 1,
         accounts = {},
+        cards = {},
     }
 end
 
@@ -30,6 +31,8 @@ function database.load()
     if type(parsed) ~= "table" or type(parsed.accounts) ~= "table" then
         error("Base des comptes invalide ou corrompue")
     end
+    parsed.cards = type(parsed.cards) == "table" and parsed.cards or {}
+
     -- Migration automatique des anciens comptes qui ne pouvaient avoir
     -- qu'une seule carte via le champ cardId.
     local migrated = false
@@ -130,14 +133,12 @@ function database.getAccount(accountNumber)
 end
 
 function database.cardIdExists(cardId)
+    if database.data.cards and database.data.cards[cardId] then return true end
     for _, account in pairs(database.data.accounts) do
         if type(account.cardIds) == "table" then
             for _, existingCardId in ipairs(account.cardIds) do
                 if existingCardId == cardId then return true end
             end
-        elseif account.cardId == cardId then
-            -- Compatibilite avec une base ancienne pas encore migree.
-            return true
         end
     end
     return false
@@ -151,25 +152,84 @@ function database.generateCardId()
     return nil, "Impossible de generer un CardID unique"
 end
 
-function database.assignCardId(accountNumber, cardId)
+function database.assignCardId(accountNumber, cardId, cardData)
     local account = database.getAccount(accountNumber)
     if not account then return nil, "Compte introuvable" end
-
     account.cardIds = account.cardIds or {}
-
+    local present = false
     for _, existingCardId in ipairs(account.cardIds) do
-        if existingCardId == cardId then
-            return account
-        end
+        if existingCardId == cardId then present = true break end
     end
-
-    if database.cardIdExists(cardId) then
-        return nil, "Ce CardID est deja utilise"
-    end
-
-    table.insert(account.cardIds, cardId)
+    if not present then table.insert(account.cardIds, cardId) end
+    database.data.cards = database.data.cards or {}
+    local record = database.data.cards[cardId] or {}
+    record.cardId = cardId
+    record.accountNumber = accountNumber
+    record.owner = (cardData and cardData.owner) or record.owner or account.owner
+    record.status = (cardData and cardData.status) or record.status or "active"
+    record.pin = (cardData and cardData.pin) or record.pin
+    record.data = (cardData and cardData.data) or record.data or ""
+    database.data.cards[cardId] = record
     database.save()
     return account
+end
+
+function database.listCardsForAccount(accountNumber)
+    local account = database.getAccount(accountNumber)
+    local result = {}
+    if not account then return result end
+    database.data.cards = database.data.cards or {}
+    for _, cardId in ipairs(account.cardIds or {}) do
+        local card = database.data.cards[cardId] or { cardId = cardId, accountNumber = accountNumber, status = "active" }
+        table.insert(result, card)
+    end
+    table.sort(result, function(a,b) return tostring(a.cardId) < tostring(b.cardId) end)
+    return result
+end
+
+function database.updateCardPin(cardId, pin)
+    database.data.cards = database.data.cards or {}
+    local card = database.data.cards[cardId]
+    if not card then return nil, "Carte introuvable" end
+    card.pin = pin
+    database.save()
+    return card
+end
+
+function database.removeCardFromAccount(accountNumber, cardId)
+    local account = database.getAccount(accountNumber)
+    if not account then return nil, "Compte introuvable" end
+    for i = #(account.cardIds or {}), 1, -1 do
+        if account.cardIds[i] == cardId then table.remove(account.cardIds, i) end
+    end
+    if database.data.cards then database.data.cards[cardId] = nil end
+    database.save()
+    return true
+end
+
+function database.setBalance(accountNumber, newBalance)
+    local account = database.getAccount(accountNumber)
+    if not account then return nil, "Compte introuvable" end
+    local old = tonumber(account.balance) or 0
+    account.balance = newBalance
+    account.history = account.history or {}
+    table.insert(account.history, {
+        date = os.date("%Y-%m-%d %H:%M"),
+        type = "manual_balance_update",
+        amount = newBalance - old,
+        balance = newBalance,
+        label = "Modification manuelle du solde",
+    })
+    database.save()
+    return account
+end
+
+function database.deleteAccount(accountNumber)
+    if not database.getAccount(accountNumber) then return nil, "Compte introuvable" end
+    -- Les enregistrements de cartes sont volontairement conserves : ils deviennent orphelins.
+    database.data.accounts[accountNumber] = nil
+    database.save()
+    return true
 end
 
 return database
