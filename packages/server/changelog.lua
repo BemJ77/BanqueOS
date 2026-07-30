@@ -1,5 +1,13 @@
 return {
     {
+        version = "0.4.4",
+        changes = {
+            "Remplacement de Echap par Back dans la creation de compte.",
+            "Ajustement du pied de page de creation de carte.",
+            "Synchronisation des metadonnees du package Serveur."
+        }
+    },
+    {
         version = "0.4.3",
         changes = {
             "Ajout de la possibilite d'associer plusieurs cartes bancaires a un meme compte.",

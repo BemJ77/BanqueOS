@@ -62,7 +62,7 @@ local function redraw(state, step, blinkVisible)
         ui.drawButton(18, "VALIDER", state.ready)
     end
 
-    ui.footer("Echap : annuler")
+    ui.footer("Back : annuler")
 end
 
 local function showError(state, step, text)
@@ -123,7 +123,7 @@ local function waitForBiometric(state)
 
     while true do
         local event, a, b, c = os.pullEventRaw()
-        if event == "terminate" or (event == "key" and a == keys.escape) then
+        if event == "terminate" or (event == "key" and a == keys.backspace) then
             return false, "CANCELLED"
         elseif event == "timer" and a == timer then
             visible = not visible
@@ -163,7 +163,7 @@ local function waitForValidation(state)
         local event, key = os.pullEventRaw()
         if event == "terminate" then return false end
         if event == "key" then
-            if key == keys.escape then return false end
+            if key == keys.backspace then return false end
             if key == keys.enter or key == keys.numPadEnter then return true end
         end
     end

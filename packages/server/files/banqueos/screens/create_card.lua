@@ -55,7 +55,7 @@ local function selectAccount()
         if #accounts > visibleRows then
             writeAt(3, 18, string.format("Compte %d/%d", selected, #accounts), colors.gray)
         end
-        ui.footer("Fleches : naviguer   Entree : valider   Back : retour")
+        ui.footer("Fleches:naviguer  Entree:valider  Back:retour")
 
         local event, key = os.pullEventRaw()
         if event == "terminate" then return nil end
