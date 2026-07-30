@@ -55,12 +55,12 @@ local function selectAccount()
         if #accounts > visibleRows then
             writeAt(3, 16, string.format("Compte %d/%d", selected, #accounts), colors.gray)
         end
-        ui.footer("Fleches : naviguer   Entree : valider   Echap : annuler")
+        ui.footer("Fleches : naviguer   Entree : valider   Back : retour")
 
         local event, key = os.pullEventRaw()
         if event == "terminate" then return nil end
         if event == "key" then
-            if key == keys.escape then
+            if key == keys.backspace then
                 return nil
             elseif key == keys.up then
                 selected = selected == 1 and #accounts or selected - 1
@@ -83,55 +83,94 @@ local function redraw(state, step, blinkVisible, errorMessage)
     ui.header("Creation de carte bancaire")
 
     if state.account then
-        writeAt(3, 7, ACCOUNT_LABEL, colors.white)
-        writeAt(3 + #ACCOUNT_LABEL, 7, state.account.accountNumber, colors.cyan)
+        writeAt(3, 8, ACCOUNT_LABEL, colors.white)
+        writeAt(3 + #ACCOUNT_LABEL, 8, state.account.accountNumber, colors.cyan)
         local nameLabel = "   Nom : "
         local nameX = 3 + #ACCOUNT_LABEL + #state.account.accountNumber
-        writeAt(nameX, 7, nameLabel, colors.white)
-        writeAt(nameX + #nameLabel, 7, state.account.owner, colors.cyan)
+        writeAt(nameX, 8, nameLabel, colors.white)
+        writeAt(nameX + #nameLabel, 8, state.account.owner, colors.cyan)
     end
 
     if step >= 2 then
         if state.cardInserted then
-            writeAt(3, 9, "Carte inseree", colors.green)
+            writeAt(3, 10, "Carte inseree", colors.green)
         elseif blinkVisible ~= false then
-            writeAt(3, 9, "Veuillez inserer une carte", colors.orange)
+            writeAt(3, 10, "Veuillez inserer une carte", colors.orange)
         end
     end
 
     if step >= 3 then
-        writeAt(3, 11, "CardID : ", colors.white)
-        writeAt(12, 11, state.cardIdDisplay or state.cardId or "XXXX", colors.cyan)
+        writeAt(3, 12, "CardID : ", colors.white)
+        writeAt(12, 12, state.cardIdDisplay or state.cardId or "XXXX", colors.cyan)
     end
 
     if step >= 4 then
-        writeAt(3, 13, "Saisissez un code PIN a 4 chiffres", colors.white)
+        writeAt(3, 14, "Saisissez un code PIN a 4 chiffres", colors.white)
         if state.pin then
-            writeAt(3, 14, "Code PIN : ", colors.white)
-            writeAt(14, 14, state.pin, colors.cyan)
+            writeAt(3, 15, "Code PIN : ", colors.white)
+            writeAt(14, 15, state.pin, colors.cyan)
         else
-            writeAt(3, 14, "Code PIN : ", colors.white)
-            writeAt(14, 14, state.pinDisplay or "", colors.cyan)
+            writeAt(3, 15, "Code PIN : ", colors.white)
+            writeAt(14, 15, state.pinDisplay or "", colors.cyan)
         end
     end
 
     if errorMessage then
-        ui.message(16, errorMessage, colors.red)
+        ui.message(17, errorMessage, colors.red)
     end
 
     if step >= 5 then
-        ui.drawButton(17, "VALIDER", true)
+        ui.drawButton(18, "VALIDER", true)
     end
 
-    ui.footer("Echap : annuler")
+    ui.footer("Back : retour")
+end
+
+local function cardIsBlank(writer)
+    if not writer.isCardBlank then
+        return nil, "Mettez a jour SecurityPeripheral : isCardBlank() manquant"
+    end
+
+    local ok, blank = pcall(writer.isCardBlank)
+    if not ok then return nil, tostring(blank) end
+    return blank == true
+end
+
+local function waitForCardRemoval(writer)
+    while writer.hasCard and writer.hasCard() do
+        local event, key = os.pullEventRaw()
+        if event == "terminate" or (event == "key" and key == keys.backspace) then
+            return false
+        end
+    end
+    return true
 end
 
 local function waitForCard(state, writer)
-    if writer.hasCard and writer.hasCard() then
+    local function validateInsertedCard()
+        local blank, blankError = cardIsBlank(writer)
+        if blank == nil then
+            redraw(state, 2, true, blankError)
+            sleep(1.8)
+            return nil, "API_ERROR"
+        end
+        if not blank then
+            state.cardInserted = false
+            redraw(state, 2, true, "Veuillez inserer une carte bancaire vierge")
+            if not waitForCardRemoval(writer) then return false end
+            return nil, "NOT_BLANK"
+        end
+
         state.cardInserted = true
         redraw(state, 2, true)
         sleep(0.5)
         return true
+    end
+
+    if writer.hasCard and writer.hasCard() then
+        local valid, reason = validateInsertedCard()
+        if valid ~= nil then return valid end
+        if reason == "API_ERROR" then return false end
     end
 
     local visible = true
@@ -140,18 +179,20 @@ local function waitForCard(state, writer)
 
     while true do
         local event, a = os.pullEventRaw()
-        if event == "terminate" or (event == "key" and a == keys.escape) then
+        if event == "terminate" or (event == "key" and a == keys.backspace) then
             return false
         elseif event == "timer" and a == timer then
             visible = not visible
-            clearLine(9)
-            if visible then writeAt(3, 9, "Veuillez inserer une carte", colors.orange) end
+            clearLine(10)
+            if visible then writeAt(3, 10, "Veuillez inserer une carte", colors.orange) end
             timer = os.startTimer(0.8)
         elseif event == "bank_card_inserted" then
-            state.cardInserted = true
-            redraw(state, 2, true)
-            sleep(0.5)
-            return true
+            local valid, reason = validateInsertedCard()
+            if valid == true then return true end
+            if valid == false or reason == "API_ERROR" then return false end
+            visible = true
+            redraw(state, 2, visible)
+            timer = os.startTimer(0.8)
         end
     end
 end
@@ -182,7 +223,7 @@ end
 
 local function readPin(state, keypad)
     if keypad.clear then keypad.clear() end
-    if keypad.setMaxLength then keypad.setMaxLength(4) end
+    if keypad.setMaxLength then keypad.setMaxLength(12) end
     if keypad.setLocked then keypad.setLocked(false) end
 
     state.pin = nil
@@ -191,14 +232,14 @@ local function readPin(state, keypad)
 
     while true do
         local event, a, b = os.pullEventRaw()
-        if event == "terminate" or (event == "key" and a == keys.escape) then
+        if event == "terminate" or (event == "key" and a == keys.backspace) then
             if keypad.setLocked then keypad.setLocked(true) end
             return false
         elseif event == "keypad_press" then
             local key = b
             if key == "C" then
                 state.pinDisplay = ""
-            elseif key and key:match("^%d$") and #state.pinDisplay < 4 then
+            elseif key and key:match("^%d$") and #state.pinDisplay < 12 then
                 state.pinDisplay = state.pinDisplay .. key
             end
             redraw(state, 4, true)
@@ -243,7 +284,7 @@ local function waitForValidation(state)
             sleep(1.2)
             return nil, "CARD_REMOVED"
         elseif event == "key" then
-            if key == keys.escape then return false end
+            if key == keys.backspace then return false end
             if key == keys.enter or key == keys.numPadEnter then return true end
         end
     end

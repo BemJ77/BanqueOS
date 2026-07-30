@@ -27,7 +27,7 @@ return {
     packages = {
         {
             folder = "server",
-            version = "0.4.0",
+            version = "0.4.1",
             files = {
                 "changelog.lua",
                 "files/banqueos/config.lua",

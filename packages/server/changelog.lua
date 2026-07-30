@@ -1,5 +1,14 @@
 return {
     {
+        version = "0.4.1",
+        changes = {
+            "Remplacement de la touche Echap par Back pour revenir en arriere.",
+            "Correction de l'affichage du compte selectionne sous le titre du module.",
+            "Reinitialisation complete de la saisie apres un code PIN invalide.",
+            "Verification qu'une carte bancaire est vierge avant sa creation."
+        }
+    },
+    {
         version = "0.4.0",
         changes = {
             "Ajout de la creation de cartes bancaires depuis le Serveur.",

@@ -1,6 +1,6 @@
 return {
     name = "BANQUEOS",
-    version = "0.4.0",
+    version = "0.4.1",
 
     -- Identite de la disquette bancaire.
     diskMarkerFile = ".banqueos_disk",
