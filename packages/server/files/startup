@@ -1,0 +1,12 @@
+local ok, err = pcall(function()
+    require("banqueos.main").run()
+end)
+
+if not ok then
+    term.setBackgroundColor(colors.black)
+    term.setTextColor(colors.red)
+    term.clear()
+    term.setCursorPos(1, 1)
+    print("BANQUEOS s'est arrete :")
+    print(tostring(err))
+end

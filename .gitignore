@@ -1,0 +1,36 @@
+############################################
+# BANQUEOS
+############################################
+
+# Logs
+*.log
+log/
+logs/
+
+# Téléchargements temporaires
+downloads/
+
+# Fichiers temporaires
+temp/
+tmp/
+
+# Sauvegardes
+*.bak
+*.old
+*.orig
+
+# Fichiers système Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+
+# Dossiers Python (si tu utilises generate_catalog.py)
+__pycache__/
+*.pyc
