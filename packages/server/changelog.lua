@@ -1,5 +1,13 @@
 return {
     {
+        version = "0.4.3",
+        changes = {
+            "Ajout de la possibilite d'associer plusieurs cartes bancaires a un meme compte.",
+            "Migration automatique de l'ancien champ cardId vers la liste cardIds.",
+        },
+    },
+
+    {
         version = "0.4.2",
         changes = {
             "Correction de la disposition de la selection des comptes",

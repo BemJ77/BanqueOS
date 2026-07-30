@@ -30,7 +30,33 @@ function database.load()
     if type(parsed) ~= "table" or type(parsed.accounts) ~= "table" then
         error("Base des comptes invalide ou corrompue")
     end
+    -- Migration automatique des anciens comptes qui ne pouvaient avoir
+    -- qu'une seule carte via le champ cardId.
+    local migrated = false
+    for _, account in pairs(parsed.accounts) do
+        if type(account.cardIds) ~= "table" then
+            account.cardIds = {}
+            migrated = true
+        end
+
+        if account.cardId ~= nil then
+            local alreadyPresent = false
+            for _, existingCardId in ipairs(account.cardIds) do
+                if existingCardId == account.cardId then
+                    alreadyPresent = true
+                    break
+                end
+            end
+            if not alreadyPresent then
+                table.insert(account.cardIds, account.cardId)
+            end
+            account.cardId = nil
+            migrated = true
+        end
+    end
+
     database.data = parsed
+    if migrated then database.save() end
     return database.data
 end
 
@@ -79,7 +105,7 @@ function database.createAccount(owner, accountNumber, biometricPlayer, biometric
             uuid = biometricUUID,
         },
         balance = initialAmount,
-        cardId = nil,
+        cardIds = {},
         history = history,
         active = true,
         createdAt = os.date("%Y-%m-%d %H:%M:%S"),
@@ -105,7 +131,14 @@ end
 
 function database.cardIdExists(cardId)
     for _, account in pairs(database.data.accounts) do
-        if account.cardId == cardId then return true end
+        if type(account.cardIds) == "table" then
+            for _, existingCardId in ipairs(account.cardIds) do
+                if existingCardId == cardId then return true end
+            end
+        elseif account.cardId == cardId then
+            -- Compatibilite avec une base ancienne pas encore migree.
+            return true
+        end
     end
     return false
 end
@@ -121,11 +154,20 @@ end
 function database.assignCardId(accountNumber, cardId)
     local account = database.getAccount(accountNumber)
     if not account then return nil, "Compte introuvable" end
-    if database.cardIdExists(cardId) and account.cardId ~= cardId then
+
+    account.cardIds = account.cardIds or {}
+
+    for _, existingCardId in ipairs(account.cardIds) do
+        if existingCardId == cardId then
+            return account
+        end
+    end
+
+    if database.cardIdExists(cardId) then
         return nil, "Ce CardID est deja utilise"
     end
 
-    account.cardId = cardId
+    table.insert(account.cardIds, cardId)
     database.save()
     return account
 end
