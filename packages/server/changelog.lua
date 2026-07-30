@@ -1,5 +1,13 @@
 return {
     {
+        version = "0.4.2",
+        changes = {
+            "Correction de la disposition de la selection des comptes",
+            "Message clignotant pour les cartes bancaires deja encodees",
+        },
+    },
+
+    {
         version = "0.4.1",
         changes = {
             "Remplacement de la touche Echap par Back pour revenir en arriere.",

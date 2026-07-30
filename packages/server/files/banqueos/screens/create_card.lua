@@ -39,10 +39,10 @@ local function selectAccount()
 
     while true do
         ui.header("Creation de carte bancaire")
-        writeAt(3, 6, "Selectionnez un compte :", colors.white)
+        writeAt(3, 8, "Selectionnez un compte :", colors.white)
 
         for row = 1, visibleRows do
-            local y = 7 + row
+            local y = 9 + row
             clearLine(y)
             local index = firstVisible + row - 1
             local account = accounts[index]
@@ -53,7 +53,7 @@ local function selectAccount()
         end
 
         if #accounts > visibleRows then
-            writeAt(3, 16, string.format("Compte %d/%d", selected, #accounts), colors.gray)
+            writeAt(3, 18, string.format("Compte %d/%d", selected, #accounts), colors.gray)
         end
         ui.footer("Fleches : naviguer   Entree : valider   Back : retour")
 
@@ -156,8 +156,29 @@ local function waitForCard(state, writer)
         end
         if not blank then
             state.cardInserted = false
-            redraw(state, 2, true, "Veuillez inserer une carte bancaire vierge")
-            if not waitForCardRemoval(writer) then return false end
+
+            local visible = true
+            redraw(state, 2, true)
+            local timer = os.startTimer(0.8)
+
+            while writer.hasCard and writer.hasCard() do
+                clearLine(12)
+                if visible then
+                    writeAt(3, 12, "Veuillez inserer une carte bancaire vierge", colors.red)
+                end
+
+                local event, value = os.pullEventRaw()
+                if event == "terminate" or (event == "key" and value == keys.backspace) then
+                    return false
+                elseif event == "timer" and value == timer then
+                    visible = not visible
+                    timer = os.startTimer(0.8)
+                elseif event == "bank_card_removed" then
+                    break
+                end
+            end
+
+            clearLine(12)
             return nil, "NOT_BLANK"
         end
 
