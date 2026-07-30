@@ -103,4 +103,31 @@ function database.getAccount(accountNumber)
     return database.data.accounts[accountNumber]
 end
 
+function database.cardIdExists(cardId)
+    for _, account in pairs(database.data.accounts) do
+        if account.cardId == cardId then return true end
+    end
+    return false
+end
+
+function database.generateCardId()
+    for _ = 1, 10000 do
+        local cardId = string.format("%04d", math.random(0, 9999))
+        if not database.cardIdExists(cardId) then return cardId end
+    end
+    return nil, "Impossible de generer un CardID unique"
+end
+
+function database.assignCardId(accountNumber, cardId)
+    local account = database.getAccount(accountNumber)
+    if not account then return nil, "Compte introuvable" end
+    if database.cardIdExists(cardId) and account.cardId ~= cardId then
+        return nil, "Ce CardID est deja utilise"
+    end
+
+    account.cardId = cardId
+    database.save()
+    return account
+end
+
 return database
