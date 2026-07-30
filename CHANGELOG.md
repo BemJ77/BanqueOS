@@ -1,3 +1,17 @@
+# CHANGELOG
+
+## 0.4.4
+
+- Remplacement de la touche Echap par Back dans la creation de compte.
+- Ajustement des espacements du pied de page de creation de carte.
+- Synchronisation de la version du Serveur dans le manifeste.
+- Correction de l'auteur du package Serveur en BemJ.
+
+## 0.4.3
+
+- Un compte peut maintenant posseder plusieurs cartes bancaires.
+- Migration automatique des comptes utilisant encore un seul `cardId`.
+
 # Changelog BANQUEOS
 
 ## Manager 1.0.0

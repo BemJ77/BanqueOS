@@ -149,22 +149,48 @@ end
 
 local function waitSelectedCard(writer, card, title)
     local visible, timer = true, os.startTimer(0.8)
+    local wrongCard = false
+
+    local function insertedCardMatches()
+        if not writer.hasCard or not writer.hasCard() then return false end
+        if not writer.getCardId then return nil, "Mettez a jour SecurityPeripheral" end
+
+        local ok, insertedCardId = pcall(writer.getCardId)
+        if not ok then return nil, tostring(insertedCardId) end
+        return tostring(insertedCardId or "") == tostring(card.cardId)
+    end
+
     while true do
         ui.header(title)
         writeAt(3, 9, "Inserez la carte N" .. DEG .. " " .. card.cardId, colors.white)
-        if visible then writeAt(3, 12, "Attente carte", colors.orange) end
-        ui.footer("Back:retour")
-        if writer.hasCard and writer.hasCard() then
-            -- L'encodeur ne permet pas de lire le CardID. L'utilisateur confirme donc
-            -- la carte demandee en l'inserant dans l'encodeur.
-            writeAt(3, 12, "Carte inseree", colors.green)
-            sleep(0.5)
-            return true
+        if wrongCard then
+            writeAt(3, 12, "Erreur : mauvaise carte", colors.red)
+            writeAt(3, 14, "Retirez-la puis inserez la bonne carte", colors.white)
+        elseif visible then
+            writeAt(3, 12, "Attente carte", colors.orange)
         end
+        ui.footer("Back:retour")
+
+        if writer.hasCard and writer.hasCard() then
+            local matches, err = insertedCardMatches()
+            if matches == true then
+                writeAt(3, 12, "Carte inseree", colors.green)
+                sleep(0.5)
+                return true
+            elseif matches == nil then
+                writeAt(3, 12, err or "Lecture CardID impossible", colors.red)
+                sleep(1.5)
+                return false
+            else
+                wrongCard = true
+            end
+        else
+            wrongCard = false
+        end
+
         local event, value = os.pullEventRaw()
         if event == "terminate" or (event == "key" and value == keys.backspace) then return false end
         if event == "timer" and value == timer then visible = not visible; timer = os.startTimer(0.8) end
-        if event == "bank_card_inserted" then return true end
     end
 end
 
@@ -276,11 +302,11 @@ local function cardMenu(account, card)
         ui.header("Carte bancaire associee")
         accountHeader(account)
         writeAt(2, 10, "CardID : " .. card.cardId .. "   PIN : " .. (card.pin or "????") .. "   Statut : ", colors.white)
-        writeAt(49, 10, card.status or "active", (card.status == "blocked") and colors.red or colors.green)
+        writeAt(41, 10, card.status or "active", (card.status == "blocked") and colors.red or colors.green)
         local choice = choose("Carte bancaire associee", {"Modifier code PIN", "Supprimer carte"}, 13, nil, function()
             accountHeader(account)
             writeAt(2, 10, "CardID : " .. card.cardId .. "   PIN : " .. (card.pin or "????") .. "   Statut : ", colors.white)
-            writeAt(49, 10, card.status or "active", (card.status == "blocked") and colors.red or colors.green)
+            writeAt(41, 10, card.status or "active", (card.status == "blocked") and colors.red or colors.green)
         end)
         if not choice then return end
         if choice == 1 then modifyPin(account, card) else deleteCard(account, card); return end
@@ -298,7 +324,7 @@ local function cardsMenu(account)
                 local prefix = i == selected and "> " or "  "
                 writeAt(2, 10 + i, prefix .. "CardID : " .. card.cardId .. "  PIN : " .. (card.pin or "????") .. "  Statut : ", i == selected and colors.cyan or colors.white)
                 local status = card.status or "active"
-                writeAt(48, 10 + i, status, status == "blocked" and colors.red or colors.green)
+                writeAt(40, 10 + i, status, status == "blocked" and colors.red or colors.green)
             end
             ui.footer("Fleches:naviguer  Entree:valider  Back:retour")
             local event,key=os.pullEventRaw()

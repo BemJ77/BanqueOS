@@ -1,6 +1,16 @@
 return {
     {
+        version = "0.5.1",
+        date = "31/07/2026",
+        changes = {
+            "Correction de l'affichage du statut des cartes",
+            "Verification du CardID avant modification ou suppression d'une carte",
+            "Message d'erreur lorsqu'une mauvaise carte est inseree"
+        }
+    },
+    {
         version = "0.5.0",
+        date = "2026-07-31",
         changes = {
             "Ajout du menu Consultation des comptes",
             "Ajout de l'historique et de la modification du solde",
@@ -12,6 +22,7 @@ return {
 
     {
         version = "0.4.4",
+        type = "fix",
         changes = {
             "Remplacement de Echap par Back dans la creation de compte.",
             "Ajustement du pied de page de creation de carte.",
@@ -20,6 +31,7 @@ return {
     },
     {
         version = "0.4.3",
+        date = "2026-07-30",
         changes = {
             "Ajout de la possibilite d'associer plusieurs cartes bancaires a un meme compte.",
             "Migration automatique de l'ancien champ cardId vers la liste cardIds.",
@@ -28,6 +40,7 @@ return {
 
     {
         version = "0.4.2",
+        date = "2026-07-30",
         changes = {
             "Correction de la disposition de la selection des comptes",
             "Message clignotant pour les cartes bancaires deja encodees",
