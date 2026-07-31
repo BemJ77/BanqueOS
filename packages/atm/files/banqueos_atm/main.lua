@@ -1,4 +1,4 @@
-local config = require("config")
+local config = dofile("/banqueos_atm/config.lua")
 
 local function ensureParent(path)
     local parent = fs.getDir(path)

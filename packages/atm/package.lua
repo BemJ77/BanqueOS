@@ -1,7 +1,7 @@
 return {
     id = "banqueos.atm",
     name = "ATM",
-    version = "0.1.2",
+    version = "0.1.3",
     author = "BemJ",
     description = "Relais de communication entre le bloc ATM SecurityPeripheral et le Serveur BANQUEOS.",
     category = "Ordinateur",

@@ -17,7 +17,7 @@ return {
 
     -- Communication sans fil BANQUEOS.
     networkProtocol = "banqueos.network.v1",
-    requiredAtmVersion = "0.1.2",
+    requiredAtmVersion = "0.1.3",
     atmStartupScanSeconds = 2.5,
     atmHeartbeatTimeoutSeconds = 45,
 }

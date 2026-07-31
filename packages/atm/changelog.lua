@@ -1,5 +1,13 @@
 return {
     {
+        version = "0.1.3",
+        date = "2026-07-31",
+        changes = {
+            "Chargement absolu de la configuration ATM",
+            "Correction definitive du demarrage depuis /banqueos_atm/main.lua"
+        }
+    },
+    {
         version = "0.1.2",
         date = "2026-07-31",
         changes = {
