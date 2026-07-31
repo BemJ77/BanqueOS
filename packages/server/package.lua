@@ -1,7 +1,7 @@
 return {
     id = "banqueos.server",
     name = "Serveur",
-    version = "0.8.1",
+    version = "0.8.2",
     author = "BemJ",
     description = "Serveur bancaire BANQUEOS avec base de donnees sur disquette.",
     category = "Ordinateur",

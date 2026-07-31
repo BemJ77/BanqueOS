@@ -1,12 +1,12 @@
 return {
     {
-        version = "0.2.2",
+        version = "0.2.3",
         date = "2026-07-31",
         changes = {
-            "Reconnexion automatique au Serveur toutes les 10 secondes",
-            "Verification de la connexion avant chaque requete ATM",
-            "Affichage ATM indisponible si le Serveur ne repond pas",
-            "Reprise automatique du relais lorsque le Serveur revient"
+            "Ajout de la reconnexion automatique toutes les 10 secondes",
+            "Verification du Serveur avant chaque requete ATM",
+            "Affichage ATM indisponible lorsque le Serveur ne repond pas",
+            "Conservation de la logique reseau stable de la version 0.2.1"
         }
     },
     {

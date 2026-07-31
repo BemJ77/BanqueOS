@@ -1,5 +1,12 @@
 return {
     {
+        version = "0.8.2",
+        date = "2026-07-31",
+        changes = {
+            "Mise a jour de la version ATM requise vers 0.2.3"
+        }
+    },
+    {
         version = "0.8.1",
         date = "2026-07-31",
         changes = {

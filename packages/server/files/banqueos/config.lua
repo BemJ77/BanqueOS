@@ -1,6 +1,6 @@
 return {
     name = "BANQUEOS",
-    version = "0.8.1",
+    version = "0.8.2",
 
     -- Identite de la disquette bancaire.
     diskMarkerFile = ".banqueos_disk",
@@ -17,7 +17,7 @@ return {
 
     -- Communication sans fil BANQUEOS.
     networkProtocol = "banqueos.network.v1",
-    requiredAtmVersion = "0.2.2",
+    requiredAtmVersion = "0.2.3",
     atmStartupScanSeconds = 2.5,
     atmPingTimeoutSeconds = 1.2,
 }
