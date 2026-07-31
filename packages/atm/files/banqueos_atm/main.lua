@@ -51,6 +51,21 @@ local function openNetwork()
     if not rednet.isOpen(name) then rednet.open(name) end
 end
 
+
+local function getCashTotal(atm)
+    if type(atm.getCashStock) ~= "function" then return 0 end
+
+    local ok, stock = pcall(atm.getCashStock)
+    if not ok or type(stock) ~= "table" then return 0 end
+
+    local total = 0
+    for denomination, count in pairs(stock) do
+        total = total + (tonumber(denomination) or 0) * (tonumber(count) or 0)
+    end
+
+    return math.floor(total * 100 + 0.5) / 100
+end
+
 local function showStatus(title, lines, color)
     term.setBackgroundColor(colors.black)
     term.clear()
@@ -64,13 +79,14 @@ local function showStatus(title, lines, color)
     for _, line in ipairs(lines or {}) do print(line) end
 end
 
-local function discoverServer(state)
+local function discoverServer(state, atm)
     showStatus("Connexion au Serveur...", {})
     rednet.broadcast({
         kind = "hello",
         atmUuid = state.uuid,
         atmVersion = config.version,
         computerId = os.getComputerID(),
+        cashTotal = getCashTotal(atm),
     }, config.protocol)
 
     local timer = os.startTimer(config.discoveryTimeoutSeconds)
@@ -100,7 +116,7 @@ local function relay()
     if not atm then error("Aucun peripherique ATM detecte") end
 
     local state = loadState()
-    local serverId, discoverError = discoverServer(state)
+    local serverId, discoverError = discoverServer(state, atm)
     if not serverId then
         showStatus("ATM indisponible", { discoverError }, colors.red)
         while true do
@@ -136,6 +152,7 @@ local function relay()
                 atmUuid = state.uuid,
                 atmNumber = state.atmNumber,
                 atmVersion = config.version,
+                cashTotal = getCashTotal(atm),
                 atmId = atmId,
                 request = request,
             }, config.protocol)
@@ -155,6 +172,7 @@ local function relay()
                     atmUuid = state.uuid,
                     atmNumber = state.atmNumber,
                     atmVersion = config.version,
+                    cashTotal = getCashTotal(atm),
                     atmId = atmId,
                     cardId = tostring(card.id),
                     cardStatus = tostring(card.status or "active"),
@@ -168,6 +186,7 @@ local function relay()
                     atmUuid = state.uuid,
                     atmVersion = config.version,
                     computerId = os.getComputerID(),
+                    cashTotal = getCashTotal(atm),
                 }, config.protocol)
 
             elseif b.kind == "hello_ack" or b.kind == "heartbeat_ack" then
@@ -213,6 +232,7 @@ local function relay()
                 atmUuid = state.uuid,
                 atmNumber = state.atmNumber,
                 atmVersion = config.version,
+                cashTotal = getCashTotal(atm),
             }, config.protocol)
             heartbeatTimer = os.startTimer(config.heartbeatSeconds)
         end

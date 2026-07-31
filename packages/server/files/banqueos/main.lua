@@ -7,6 +7,7 @@ local createAccount = require("banqueos.screens.create_account")
 local createCard = require("banqueos.screens.create_card")
 local accounts = require("banqueos.screens.accounts")
 local cards = require("banqueos.screens.cards")
+local atms = require("banqueos.screens.atms")
 local network = require("banqueos.core.network")
 
 local main = {}
@@ -131,6 +132,8 @@ local function applicationLoop()
             createCard.show()
         elseif choice == 4 then
             cards.show()
+        elseif choice == 5 then
+            atms.show()
         end
     end
 end

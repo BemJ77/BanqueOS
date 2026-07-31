@@ -39,7 +39,20 @@ local function validateAtm(senderId, message)
             requiredVersion = config.requiredAtmVersion,
         }
     end
-    local atm = database.registerAtm(message.atmUuid, senderId, message.atmVersion)
+    local atm, registerError = database.registerAtm(
+        message.atmUuid,
+        senderId,
+        message.atmVersion,
+        message.cashTotal
+    )
+    if not atm then
+        return nil, {
+            kind = "response",
+            relayId = message.relayId,
+            success = false,
+            code = registerError or "ATM_REJECTED",
+        }
+    end
     return atm
 end
 
@@ -104,7 +117,7 @@ function network.startupScan()
         if event == "timer" and a == timer then break end
         if event == "rednet_message" and c == config.networkProtocol and type(b) == "table" then
             if b.kind == "hello" and b.atmUuid then
-                local atm = database.registerAtm(b.atmUuid, a, b.atmVersion)
+                local atm = database.registerAtm(b.atmUuid, a, b.atmVersion, b.cashTotal)
                 rednet.send(a, {
                     kind = "hello_ack",
                     accepted = tostring(b.atmVersion or "") == config.requiredAtmVersion,
@@ -140,7 +153,16 @@ function network.serviceLoop()
 
         if event == "rednet_message" and protocol == config.networkProtocol and type(message) == "table" then
             if message.kind == "hello" and message.atmUuid then
-                local atm = database.registerAtm(message.atmUuid, senderId, message.atmVersion)
+                local atm = database.registerAtm(message.atmUuid, senderId, message.atmVersion, message.cashTotal)
+                if not atm then
+                    rednet.send(senderId, {
+                        kind = "hello_ack",
+                        accepted = false,
+                        code = "ATM_SUPPRIME",
+                        requiredVersion = config.requiredAtmVersion,
+                        serverId = os.getComputerID(),
+                    }, config.networkProtocol)
+                else
                 rednet.send(senderId, {
                     kind = "hello_ack",
                     accepted = tostring(message.atmVersion or "") == config.requiredAtmVersion,
@@ -148,15 +170,25 @@ function network.serviceLoop()
                     requiredVersion = config.requiredAtmVersion,
                     serverId = os.getComputerID(),
                 }, config.networkProtocol)
+                end
 
             elseif message.kind == "heartbeat" and message.atmUuid then
-                local atm = database.registerAtm(message.atmUuid, senderId, message.atmVersion)
+                local atm = database.registerAtm(message.atmUuid, senderId, message.atmVersion, message.cashTotal)
+                if not atm then
+                    rednet.send(senderId, {
+                        kind = "heartbeat_ack",
+                        accepted = false,
+                        code = "ATM_SUPPRIME",
+                        requiredVersion = config.requiredAtmVersion,
+                    }, config.networkProtocol)
+                else
                 rednet.send(senderId, {
                     kind = "heartbeat_ack",
                     accepted = tostring(message.atmVersion or "") == config.requiredAtmVersion,
                     atmNumber = atm.number,
                     requiredVersion = config.requiredAtmVersion,
                 }, config.networkProtocol)
+                end
 
             elseif message.kind == "status_check" then
                 local atm, rejection = validateAtm(senderId, message)

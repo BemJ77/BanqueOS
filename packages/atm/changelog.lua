@@ -1,5 +1,13 @@
 return {
     {
+        version = "0.2.0",
+        date = "2026-07-31",
+        changes = {
+            "Transmission du stock actuel de l'ATM au Serveur",
+            "Calcul du stock total avec atm.getCashStock()"
+        }
+    },
+    {
         version = "0.1.3",
         date = "2026-07-31",
         changes = {

@@ -1,5 +1,22 @@
 return {
     {
+        version = "0.8.0",
+        date = "2026-07-31",
+        changes = {
+            "Ajout de la ligne Recherche des ATM au chargement",
+            "Ajout du menu Gestion des ATM",
+            "Affichage de l'etat, de la version, du nom et du stock actuel",
+            "Ajout du renommage et de la suppression des ATM"
+        }
+    },
+    {
+        version = "0.7.3",
+        date = "2026-07-31",
+        changes = {
+            "Mise a jour de la version ATM requise vers 0.1.3"
+        }
+    },
+    {
         version = "0.7.2",
         date = "2026-07-31",
         changes = {

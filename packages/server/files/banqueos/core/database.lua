@@ -34,6 +34,7 @@ function database.load()
     end
     parsed.cards = type(parsed.cards) == "table" and parsed.cards or {}
     parsed.atms = type(parsed.atms) == "table" and parsed.atms or {}
+    parsed.removedAtms = type(parsed.removedAtms) == "table" and parsed.removedAtms or {}
 
     -- Migration automatique des anciens comptes qui ne pouvaient avoir
     -- qu'une seule carte via le champ cardId.
@@ -339,26 +340,38 @@ function database.getHistoryForCard(cardId, limit)
     return result
 end
 
-function database.registerAtm(atmUuid, computerId, version)
+function database.registerAtm(atmUuid, computerId, version, cashTotal)
     database.data.atms = database.data.atms or {}
+    database.data.removedAtms = database.data.removedAtms or {}
+
     atmUuid = tostring(atmUuid)
+    if database.data.removedAtms[atmUuid] then
+        return nil, "ATM_SUPPRIME"
+    end
+
     local atm = database.data.atms[atmUuid]
     if not atm then
         local used = {}
         for _, value in pairs(database.data.atms) do
             used[tonumber(value.number)] = true
         end
+
         local number = 1
         while used[number] do number = number + 1 end
+
         atm = {
             uuid = atmUuid,
             number = number,
             createdAt = os.date("%Y-%m-%d %H:%M:%S"),
+            name = "",
+            cashTotal = 0,
         }
         database.data.atms[atmUuid] = atm
     end
+
     atm.computerId = tonumber(computerId)
     atm.version = tostring(version or "")
+    atm.cashTotal = tonumber(cashTotal) or tonumber(atm.cashTotal) or 0
     atm.lastSeen = os.epoch("utc")
     database.save()
     return atm
@@ -367,9 +380,42 @@ end
 function database.listAtms()
     database.data.atms = database.data.atms or {}
     local result = {}
-    for _, atm in pairs(database.data.atms) do result[#result + 1] = atm end
-    table.sort(result, function(a, b) return tonumber(a.number) < tonumber(b.number) end)
+    for _, atm in pairs(database.data.atms) do
+        result[#result + 1] = atm
+    end
+    table.sort(result, function(a, b)
+        return tonumber(a.number) < tonumber(b.number)
+    end)
     return result
+end
+
+function database.renameAtm(atmUuid, name)
+    database.data.atms = database.data.atms or {}
+    local atm = database.data.atms[tostring(atmUuid)]
+    if not atm then return nil, "ATM introuvable" end
+
+    name = tostring(name or "")
+    name = name:gsub("^%s+", ""):gsub("%s+$", "")
+    if #name > 24 then name = name:sub(1, 24) end
+
+    atm.name = name
+    database.save()
+    return atm
+end
+
+function database.deleteAtm(atmUuid)
+    database.data.atms = database.data.atms or {}
+    database.data.removedAtms = database.data.removedAtms or {}
+
+    atmUuid = tostring(atmUuid)
+    if not database.data.atms[atmUuid] then
+        return nil, "ATM introuvable"
+    end
+
+    database.data.atms[atmUuid] = nil
+    database.data.removedAtms[atmUuid] = true
+    database.save()
+    return true
 end
 
 return database

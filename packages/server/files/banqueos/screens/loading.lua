@@ -28,7 +28,8 @@ function loading.show(diskInfo)
         line(14, "Chargement des comptes...", colors.white)
     end
 
-    line(15, "Systeme pret.", colors.green)
+    line(15, "Recherche des ATM...", colors.white)
+    line(16, "Systeme pret.", colors.green)
     ui.footer("Appuyez sur une touche")
     return ui.waitForAnyKey()
 end
