@@ -1,5 +1,19 @@
 return {
     {
+        version = "0.7.2",
+        date = "2026-07-31",
+        changes = {
+            "Mise a jour de la version ATM requise vers 0.1.2"
+        }
+    },
+    {
+        version = "0.7.1",
+        date = "2026-07-31",
+        changes = {
+            "Correction de l'ouverture du modem sans fil"
+        }
+    },
+    {
         version = "0.7.0",
         date = "2026-07-31",
         changes = {

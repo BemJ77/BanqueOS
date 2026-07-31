@@ -1,5 +1,5 @@
 return {
-    version = "0.1.0",
+    version = "0.1.2",
     protocol = "banqueos.network.v1",
     stateFile = "/banqueos_atm/state.db",
     heartbeatSeconds = 10,

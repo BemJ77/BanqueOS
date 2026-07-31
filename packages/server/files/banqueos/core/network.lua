@@ -4,10 +4,13 @@ local database = require("banqueos.core.database")
 local network = {}
 
 local function findWirelessModem()
-    return peripheral.find("modem", function(_, modem)
-        local ok, wireless = pcall(modem.isWireless)
+    local modem = peripheral.find("modem", function(_, candidate)
+        local ok, wireless = pcall(candidate.isWireless)
         return ok and wireless
     end)
+
+    if not modem then return nil, nil end
+    return modem, peripheral.getName(modem)
 end
 
 local function openRednet()
