@@ -1,5 +1,15 @@
 return {
     {
+        version = "0.8.1",
+        date = "2026-07-31",
+        changes = {
+            "Ajout du numero ATM sur la ligne d'etat",
+            "Remplacement du heartbeat par un ping a la demande",
+            "Verification de l'etat uniquement dans Gestion des ATM",
+            "Affichage du stock comme indisponible si l'ATM ne repond pas",
+        }
+    },
+    {
         version = "0.8.0",
         date = "2026-07-31",
         changes = {

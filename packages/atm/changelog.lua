@@ -1,5 +1,14 @@
 return {
     {
+        version = "0.2.1",
+        date = "2026-07-31",
+        changes = {
+            "Suppression du heartbeat permanent",
+            "Ajout de la reponse aux pings du Serveur",
+            "La reponse de ping contient uniquement succes, version et stock",
+        }
+    },
+    {
         version = "0.2.0",
         date = "2026-07-31",
         changes = {

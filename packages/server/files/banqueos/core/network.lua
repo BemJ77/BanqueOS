@@ -138,6 +138,63 @@ function network.startupScan()
     return list, true
 end
 
+
+function network.pingAtms(atms)
+    local modemName = openRednet()
+    if not modemName then return {} end
+
+    local pending = {}
+    local results = {}
+
+    for _, atm in ipairs(atms or {}) do
+        local computerId = tonumber(atm.computerId)
+        if computerId then
+            local pingId = string.format(
+                "ping-%d-%d-%d",
+                os.getComputerID(),
+                tonumber(atm.number) or 0,
+                os.epoch("utc")
+            )
+            pending[pingId] = {
+                uuid = tostring(atm.uuid),
+                computerId = computerId,
+            }
+            rednet.send(computerId, {
+                kind = "atm_ping",
+                pingId = pingId,
+            }, config.networkProtocol)
+        end
+    end
+
+    local timer = os.startTimer(tonumber(config.atmPingTimeoutSeconds) or 1.2)
+
+    while next(pending) do
+        local event, senderId, message, protocol = os.pullEventRaw()
+
+        if event == "timer" and senderId == timer then break end
+        if event == "terminate" then break end
+
+        if event == "rednet_message"
+            and protocol == config.networkProtocol
+            and type(message) == "table"
+            and message.kind == "atm_ping_response"
+            and pending[message.pingId]
+        then
+            local item = pending[message.pingId]
+            if senderId == item.computerId then
+                results[item.uuid] = {
+                    success = message.success == true,
+                    version = tostring(message.version or ""),
+                    stock = tonumber(message.stock) or 0,
+                }
+                pending[message.pingId] = nil
+            end
+        end
+    end
+
+    return results
+end
+
 function network.serviceLoop()
     local modemName = openRednet()
     if not modemName then
@@ -169,24 +226,6 @@ function network.serviceLoop()
                     atmNumber = atm.number,
                     requiredVersion = config.requiredAtmVersion,
                     serverId = os.getComputerID(),
-                }, config.networkProtocol)
-                end
-
-            elseif message.kind == "heartbeat" and message.atmUuid then
-                local atm = database.registerAtm(message.atmUuid, senderId, message.atmVersion, message.cashTotal)
-                if not atm then
-                    rednet.send(senderId, {
-                        kind = "heartbeat_ack",
-                        accepted = false,
-                        code = "ATM_SUPPRIME",
-                        requiredVersion = config.requiredAtmVersion,
-                    }, config.networkProtocol)
-                else
-                rednet.send(senderId, {
-                    kind = "heartbeat_ack",
-                    accepted = tostring(message.atmVersion or "") == config.requiredAtmVersion,
-                    atmNumber = atm.number,
-                    requiredVersion = config.requiredAtmVersion,
                 }, config.networkProtocol)
                 end
 

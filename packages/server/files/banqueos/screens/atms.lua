@@ -2,6 +2,7 @@ local ui = require("banqueos.core.ui")
 local money = require("banqueos.core.money")
 local database = require("banqueos.core.database")
 local config = require("banqueos.config")
+local network = require("banqueos.core.network")
 
 local screen = {}
 
@@ -12,18 +13,13 @@ local function writeAt(x, y, text, color)
     term.write(text)
 end
 
-local function getState(atm)
-    local age = os.epoch("utc") - (tonumber(atm.lastSeen) or 0)
-    local connected = age <= (tonumber(config.atmHeartbeatTimeoutSeconds) or 45) * 1000
-
-    if not connected then
+local function getState(live)
+    if not live or live.success ~= true then
         return "Deconnecte", colors.orange
     end
-
-    if tostring(atm.version or "") ~= tostring(config.requiredAtmVersion) then
+    if tostring(live.version or "") ~= tostring(config.requiredAtmVersion) then
         return "Erreur", colors.red
     end
-
     return "En ligne", colors.green
 end
 
@@ -120,13 +116,17 @@ local function details(atm)
         if not current then return end
         atm = current
 
-        ui.header("Gestion des ATM")
-        local state, stateColor = getState(atm)
+        local liveResults = network.pingAtms({ atm })
+        local live = liveResults[tostring(atm.uuid)]
+        local state, stateColor = getState(live)
+        local displayedVersion = live and live.version or tostring(atm.version or "?")
 
-        writeAt(3, 8, "Etat : ", colors.white)
-        writeAt(10, 8, state, stateColor)
-        writeAt(25, 8, "Version : ", colors.white)
-        writeAt(35, 8, tostring(atm.version or "?"), colors.cyan)
+        ui.header("Gestion des ATM")
+        writeAt(3, 8, string.format("ATM N° %03d", tonumber(atm.number) or 0), colors.cyan)
+        writeAt(16, 8, "Etat : ", colors.white)
+        writeAt(23, 8, state, stateColor)
+        writeAt(35, 8, "Version : ", colors.white)
+        writeAt(45, 8, displayedVersion, colors.cyan)
 
         local y = 10
         if tostring(atm.name or "") ~= "" then
@@ -136,7 +136,11 @@ local function details(atm)
         end
 
         writeAt(3, y, "Stock actuel : ", colors.white)
-        writeAt(18, y, money.formatEuros(tonumber(atm.cashTotal) or 0), colors.yellow)
+        if live and live.success then
+            writeAt(18, y, money.formatEuros(tonumber(live.stock) or 0), colors.yellow)
+        else
+            writeAt(18, y, "Indisponible", colors.orange)
+        end
 
         local menuY = y + 3
         local choices = { "Renommer", "Supprimer" }

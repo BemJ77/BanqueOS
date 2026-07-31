@@ -132,7 +132,6 @@ local function relay()
     )
 
     local pending = {}
-    local heartbeatTimer = os.startTimer(config.heartbeatSeconds)
 
     while true do
         local event, a, b, c, d = os.pullEventRaw()
@@ -179,6 +178,20 @@ local function relay()
                 }, config.protocol)
             end
 
+        elseif event == "rednet_message"
+            and a == serverId
+            and c == config.protocol
+            and type(b) == "table"
+            and b.kind == "atm_ping"
+        then
+            rednet.send(serverId, {
+                kind = "atm_ping_response",
+                pingId = b.pingId,
+                success = true,
+                version = config.version,
+                stock = getCashTotal(atm),
+            }, config.protocol)
+
         elseif event == "rednet_message" and a == serverId and c == config.protocol and type(b) == "table" then
             if b.kind == "server_probe" then
                 rednet.send(serverId, {
@@ -189,7 +202,7 @@ local function relay()
                     cashTotal = getCashTotal(atm),
                 }, config.protocol)
 
-            elseif b.kind == "hello_ack" or b.kind == "heartbeat_ack" then
+            elseif b.kind == "hello_ack" then
                 state.atmNumber = tonumber(b.atmNumber) or state.atmNumber
                 saveState(state)
                 if not b.accepted then
@@ -226,15 +239,6 @@ local function relay()
                 end
             end
 
-        elseif event == "timer" and a == heartbeatTimer then
-            rednet.send(serverId, {
-                kind = "heartbeat",
-                atmUuid = state.uuid,
-                atmNumber = state.atmNumber,
-                atmVersion = config.version,
-                cashTotal = getCashTotal(atm),
-            }, config.protocol)
-            heartbeatTimer = os.startTimer(config.heartbeatSeconds)
         end
 
         local now = os.epoch("utc")
