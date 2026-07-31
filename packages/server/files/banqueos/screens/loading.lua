@@ -30,8 +30,20 @@ function loading.show(diskInfo)
 
     line(15, "Recherche des ATM...", colors.white)
     line(16, "Systeme pret.", colors.green)
-    ui.footer("Appuyez sur une touche")
-    return ui.waitForAnyKey()
+    ui.footer("Une touche : continuer   Auto : 5 sec")
+
+    local timer = os.startTimer(5)
+    while true do
+        local event, value = os.pullEventRaw()
+
+        if event == "terminate" then
+            return false
+        elseif event == "key" then
+            return true
+        elseif event == "timer" and value == timer then
+            return true
+        end
+    end
 end
 
 return loading

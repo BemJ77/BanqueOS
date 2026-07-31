@@ -1,5 +1,13 @@
 return {
     {
+        version = "0.8.3",
+        date = "2026-07-31",
+        changes = {
+            "Passage automatique au menu principal apres 5 secondes",
+            "Conservation du passage immediat avec une touche"
+        }
+    },
+    {
         version = "0.8.2",
         date = "2026-07-31",
         changes = {
