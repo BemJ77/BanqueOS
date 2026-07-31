@@ -28,7 +28,7 @@ return {
         },
         {
             folder = "atm",
-            version = "0.2.1",
+            version = "0.2.2",
             files = {
                 "changelog.lua",
                 "files/banqueos_atm/config.lua",
