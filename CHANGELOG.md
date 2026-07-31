@@ -1,7 +1,13 @@
-# Changelog BANQUEOS
+# CHANGELOG
 
 ## Manager 1.0.0
+- Première version stable du gestionnaire de packages.
 
-- Ajout du BANQUEOS Manager base sur l'architecture de CraftBot Manager.
-- Ajout de l'installation, de la verification, de la reparation, de la mise a jour et de la desinstallation des packages.
-- Ajout du package Serveur BANQUEOS 0.3.2 sans modification de son code fonctionnel.
+## Server 0.6.0
+- Gestion complète des comptes
+- Gestion complète des cartes
+- Historique des transactions
+- Cartes multiples
+- Cartes orphelines
+- Blocage / déblocage des cartes
+- Synchronisation prévue avec l'ATM
