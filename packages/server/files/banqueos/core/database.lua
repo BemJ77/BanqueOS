@@ -232,4 +232,42 @@ function database.deleteAccount(accountNumber)
     return true
 end
 
+
+function database.getCard(cardId)
+    database.data.cards = database.data.cards or {}
+    return database.data.cards[tostring(cardId)]
+end
+
+function database.listCards()
+    database.data.cards = database.data.cards or {}
+    local result = {}
+    for cardId, card in pairs(database.data.cards) do
+        card.cardId = tostring(card.cardId or cardId)
+        table.insert(result, card)
+    end
+    table.sort(result, function(a, b) return tostring(a.cardId) < tostring(b.cardId) end)
+    return result
+end
+
+function database.updateCardStatus(cardId, status)
+    local card = database.getCard(cardId)
+    if not card then return nil, "Carte introuvable" end
+    card.status = tostring(status)
+    database.save()
+    return card
+end
+
+function database.deleteCard(cardId)
+    cardId = tostring(cardId)
+    for _, account in pairs(database.data.accounts or {}) do
+        for i = #(account.cardIds or {}), 1, -1 do
+            if tostring(account.cardIds[i]) == cardId then table.remove(account.cardIds, i) end
+        end
+    end
+    database.data.cards = database.data.cards or {}
+    database.data.cards[cardId] = nil
+    database.save()
+    return true
+end
+
 return database

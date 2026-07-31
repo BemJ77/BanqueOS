@@ -1,5 +1,17 @@
 return {
     {
+        version = "0.6.0",
+        date = "2026-07-31",
+        changes = {
+            "Ajout du menu Gestion des cartes",
+            "Ajout de la consultation de toutes les cartes, y compris les cartes orphelines",
+            "Ajout du blocage administratif d'une carte dans la base serveur",
+            "Ajout du deblocage avec lecture et reencodage du statut de la carte",
+            "Reutilisation de la modification du PIN et de la suppression de carte"
+        }
+    },
+
+    {
         version = "0.5.3",
         date = "2026-07-31",
         changes = {

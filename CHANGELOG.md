@@ -1,23 +1,3 @@
-# CHANGELOG
-
-## 0.5.2 - 2026-07-31
-
-- Correction de l'erreur `bad argument #1 (string expected, got nil)` lors de la modification du PIN.
-- Le writer réencode désormais Owner, Status, CardID et Data avec leurs valeurs existantes, et remplace uniquement le PIN.
-
-
-## 0.4.4
-
-- Remplacement de la touche Echap par Back dans la creation de compte.
-- Ajustement des espacements du pied de page de creation de carte.
-- Synchronisation de la version du Serveur dans le manifeste.
-- Correction de l'auteur du package Serveur en BemJ.
-
-## 0.4.3
-
-- Un compte peut maintenant posseder plusieurs cartes bancaires.
-- Migration automatique des comptes utilisant encore un seul `cardId`.
-
 # Changelog BANQUEOS
 
 ## Manager 1.0.0

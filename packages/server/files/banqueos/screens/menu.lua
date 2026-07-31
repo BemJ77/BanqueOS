@@ -6,6 +6,7 @@ local entries = {
     "Creer un compte",
     "Consulter les comptes",
     "Creer une carte bancaire",
+    "Gestion des cartes",
 }
 
 local function draw(selected)

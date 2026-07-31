@@ -4,7 +4,7 @@ return {
     packages = {
         {
             folder = "server",
-            version = "0.5.3",
+            version = "0.6.0",
             files = {
                 "changelog.lua",
                 "files/banqueos/config.lua",
@@ -14,6 +14,7 @@ return {
                 "files/banqueos/core/ui.lua",
                 "files/banqueos/main.lua",
                 "files/banqueos/screens/accounts.lua",
+                "files/banqueos/screens/cards.lua",
                 "files/banqueos/screens/create_account.lua",
                 "files/banqueos/screens/create_card.lua",
                 "files/banqueos/screens/loading.lua",
