@@ -7,6 +7,7 @@ local function defaultData()
         schemaVersion = 1,
         accounts = {},
         cards = {},
+        atms = {},
     }
 end
 
@@ -32,6 +33,7 @@ function database.load()
         error("Base des comptes invalide ou corrompue")
     end
     parsed.cards = type(parsed.cards) == "table" and parsed.cards or {}
+    parsed.atms = type(parsed.atms) == "table" and parsed.atms or {}
 
     -- Migration automatique des anciens comptes qui ne pouvaient avoir
     -- qu'une seule carte via le champ cardId.
@@ -268,6 +270,106 @@ function database.deleteCard(cardId)
     database.data.cards[cardId] = nil
     database.save()
     return true
+end
+
+
+local function appendHistory(account, operationType, amount, label)
+    account.history = account.history or {}
+    table.insert(account.history, 1, {
+        date = os.date("%Y-%m-%d %H:%M"),
+        type = operationType,
+        amount = amount,
+        balance = account.balance,
+        label = label,
+    })
+    while #account.history > 100 do table.remove(account.history) end
+end
+
+function database.getAccountForCard(cardId)
+    local card = database.getCard(cardId)
+    if not card then return nil, nil, "Carte introuvable" end
+    local account = database.getAccount(card.accountNumber)
+    if not account then return nil, card, "Compte associe introuvable" end
+    return account, card
+end
+
+function database.depositByCard(cardId, amount)
+    amount = tonumber(amount)
+    if not amount or amount <= 0 then return nil, "Montant invalide" end
+    local account, card, err = database.getAccountForCard(cardId)
+    if not account then return nil, err end
+    if tostring(card.status or "active") ~= "active" then return nil, "Carte bloquee" end
+    account.balance = math.floor(((tonumber(account.balance) or 0) + amount) * 100 + 0.5) / 100
+    appendHistory(account, "deposit", amount, "Depot especes ATM")
+    database.save()
+    return account
+end
+
+function database.withdrawByCard(cardId, amount)
+    amount = tonumber(amount)
+    if not amount or amount <= 0 then return nil, "Montant invalide" end
+    local account, card, err = database.getAccountForCard(cardId)
+    if not account then return nil, err end
+    if tostring(card.status or "active") ~= "active" then return nil, "Carte bloquee" end
+    local balance = tonumber(account.balance) or 0
+    if balance + 0.0001 < amount then return nil, "Solde insuffisant" end
+    account.balance = math.floor((balance - amount) * 100 + 0.5) / 100
+    appendHistory(account, "withdraw", -amount, "Retrait ATM")
+    database.save()
+    return account
+end
+
+function database.getHistoryForCard(cardId, limit)
+    local account, card, err = database.getAccountForCard(cardId)
+    if not account then return nil, err end
+    if tostring(card.status or "active") ~= "active" then return nil, "Carte bloquee" end
+    local result = {}
+    local history = account.history or {}
+    limit = math.max(1, math.min(tonumber(limit) or 20, 20))
+    for i = 1, math.min(#history, limit) do
+        local item = history[i]
+        result[#result + 1] = {
+            date = tostring(item.date or ""),
+            type = tostring(item.type or ""),
+            amount = tonumber(item.amount) or 0,
+            balance = tonumber(item.balance) or 0,
+            label = tostring(item.label or ""),
+        }
+    end
+    return result
+end
+
+function database.registerAtm(atmUuid, computerId, version)
+    database.data.atms = database.data.atms or {}
+    atmUuid = tostring(atmUuid)
+    local atm = database.data.atms[atmUuid]
+    if not atm then
+        local used = {}
+        for _, value in pairs(database.data.atms) do
+            used[tonumber(value.number)] = true
+        end
+        local number = 1
+        while used[number] do number = number + 1 end
+        atm = {
+            uuid = atmUuid,
+            number = number,
+            createdAt = os.date("%Y-%m-%d %H:%M:%S"),
+        }
+        database.data.atms[atmUuid] = atm
+    end
+    atm.computerId = tonumber(computerId)
+    atm.version = tostring(version or "")
+    atm.lastSeen = os.epoch("utc")
+    database.save()
+    return atm
+end
+
+function database.listAtms()
+    database.data.atms = database.data.atms or {}
+    local result = {}
+    for _, atm in pairs(database.data.atms) do result[#result + 1] = atm end
+    table.sort(result, function(a, b) return tonumber(a.number) < tonumber(b.number) end)
+    return result
 end
 
 return database

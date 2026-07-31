@@ -27,12 +27,13 @@ return {
     packages = {
         {
             folder = "server",
-            version = "0.6.0",
+            version = "0.7.0",
             files = {
                 "changelog.lua",
                 "files/banqueos/config.lua",
                 "files/banqueos/core/database.lua",
                 "files/banqueos/core/money.lua",
+                "files/banqueos/core/network.lua",
                 "files/banqueos/core/storage.lua",
                 "files/banqueos/core/ui.lua",
                 "files/banqueos/main.lua",
@@ -43,6 +44,17 @@ return {
                 "files/banqueos/screens/loading.lua",
                 "files/banqueos/screens/menu.lua",
                 "files/banqueos/screens/placeholder.lua",
+                "files/startup",
+                "package.lua",
+            },
+        },
+        {
+            folder = "atm",
+            version = "0.1.0",
+            files = {
+                "changelog.lua",
+                "files/banqueos_atm/config.lua",
+                "files/banqueos_atm/main.lua",
                 "files/startup",
                 "package.lua",
             },

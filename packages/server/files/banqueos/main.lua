@@ -7,6 +7,7 @@ local createAccount = require("banqueos.screens.create_account")
 local createCard = require("banqueos.screens.create_card")
 local accounts = require("banqueos.screens.accounts")
 local cards = require("banqueos.screens.cards")
+local network = require("banqueos.core.network")
 
 local main = {}
 
@@ -149,7 +150,8 @@ local function runProtectedSession()
     local reason = "EXIT"
     parallel.waitForAny(
         function() reason = applicationLoop() end,
-        function() reason = diskWatcher() end
+        function() reason = diskWatcher() end,
+        function() reason = network.serviceLoop() end
     )
     return reason
 end
@@ -184,6 +186,19 @@ local function waitForActiveDisk()
     end
 end
 
+
+local function showOutdatedAtms(atmNumbers)
+    if type(atmNumbers) ~= "table" or #atmNumbers == 0 then return end
+    ui.header("Mise a jour ATM requise")
+    local y = 9
+    for _, number in ipairs(atmNumbers) do
+        ui.message(y, string.format("Veuillez mettre a jour ATM N° %03d.", number), colors.orange)
+        y = y + 2
+    end
+    ui.footer("Appuyez sur une touche pour continuer")
+    os.pullEvent("key")
+end
+
 function main.run()
     math.randomseed(os.epoch("utc") % 2147483647)
 
@@ -193,7 +208,12 @@ function main.run()
     diskInfo.migrated = offerLegacyMigration()
     database.load()
 
+    local outdatedAtms = {}
+    local scanOk
+    outdatedAtms, scanOk = network.startupScan()
+
     if not loading.show(diskInfo) then return end
+    showOutdatedAtms(outdatedAtms)
 
     while true do
         local reason = runProtectedSession()

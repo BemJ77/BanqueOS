@@ -1,5 +1,16 @@
 return {
     {
+        version = "0.7.0",
+        date = "2026-07-31",
+        changes = {
+            "Ajout de la communication sans fil avec le package ATM",
+            "Ajout des requetes balance, withdraw, deposit, history et block_card",
+            "Enregistrement permanent des ATM et attribution d'un numero",
+            "Refus des ATM dont la version n'est pas exactement a jour",
+            "Avertissement au demarrage pour les ATM a mettre a jour"
+        }
+    },
+    {
         version = "0.6.0",
         date = "2026-07-31",
         changes = {
